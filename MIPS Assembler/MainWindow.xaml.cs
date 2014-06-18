@@ -1,20 +1,11 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.IO;
 using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
+using System.Text.RegularExpressions;
 using System.Windows;
 using System.Windows.Controls;
-using System.Windows.Data;
-using System.Windows.Documents;
-using System.Windows.Input;
-using System.Windows.Media;
-using System.Windows.Media.Imaging;
-using System.Windows.Navigation;
-using System.Windows.Shapes;
-using System.IO;
 using System.Windows.Forms;
-using System.Text.RegularExpressions;
 
 namespace MIPS_Assembler
 {
@@ -63,13 +54,9 @@ namespace MIPS_Assembler
             fs.Close();
             StreamWriter sw = src.CreateText();
 
-            string temp = "";
-            foreach (string line in resultToPrint)
-            {
-                temp += line + '\n';
-            }            
+                  
 
-            sw.Write(temp);
+            sw.Write(result.Text);
             sw.Close();
         }
 
@@ -187,7 +174,17 @@ namespace MIPS_Assembler
             machineCode = dealPseudo(asm);
             machineCode = doStyle(machineCode);
             machineCode = dealBranch(machineCode);
+
             machineCode = dealInstruction(machineCode);
+           /* try
+            {
+                machineCode = dealInstruction(machineCode);
+            }
+            catch (FormatException f)
+            {
+                System.Windows.MessageBox.Show("在dealInstruction方法中"+f.Message);
+            }
+            */
             return machineCode;
         }
 
@@ -197,8 +194,24 @@ namespace MIPS_Assembler
             for (int i = 0; i < machineCodes.Length; i++)
             {
                 string[] instruction = machineCodes[i].Split(new char[] { ' ' }, 2);
-                instruction[1] = instruction[1].Remove(instruction[1].Length - 1);//除去最后一个字符：分号
+                try
+                {
+                    instruction[1] = instruction[1].Remove(instruction[1].Length - 1);//除去最后一个字符：分号 
+                    
+                }
+                catch (IndexOutOfRangeException f)
+                {
+                    System.Windows.MessageBox.Show("dealInstruction()方法中" + f.Message);
+                
+                }
+                if(instruction.Length==1)
+                {
+                    System.Windows.MessageBox.Show("dealInstructon failed!");
+                    return machineCodes;
+                }
                 string[] operant = instruction[1].Split(',');
+                
+               
                 string[] temp;
                 switch (instruction[0])
                 {
@@ -316,6 +329,10 @@ namespace MIPS_Assembler
                         insType = insFormat.I;
                         machineCodes[i] = hexTob6("d") + regN(operant[1]) + regN(operant[0]) + immToB16(operant[2]);
                         break;
+                    case "xori":
+                        insType = insFormat.I;
+                        machineCodes[i] = hexTob6("e") + regN(operant[1]) + regN(operant[0]) + immToB16(operant[2]);
+                        break;
                     case "xor":
                         insType = insFormat.R;
                         machineCodes[i] = "000000" + regN(operant[1]) + regN(operant[2]) + regN(operant[0]) +"00000" + hexTob6("26");
@@ -358,11 +375,11 @@ namespace MIPS_Assembler
                         break;
                     case "beq":
                         insType = insFormat.I;
-                        machineCodes[i] = hexTob6("4") + regN(operant[0]) + regN(operant[1]) + calculateAddress(operant[2]);
+                        machineCodes[i] = hexTob6("4") + regN(operant[0]) + regN(operant[1]) + calculateAddress(operant[2],i+2);
                         break;
                     case "bne":
                         insType = insFormat.I;
-                        machineCodes[i] = hexTob6("5") + regN(operant[0]) + regN(operant[1]) + calculateAddress(operant[2]);
+                        machineCodes[i] = hexTob6("5") + regN(operant[0]) + regN(operant[1]) + calculateAddress(operant[2], i + 2);
                         break;
                     case "j":
                         insType = insFormat.J;
@@ -387,14 +404,14 @@ namespace MIPS_Assembler
         {
             p = p.Trim();
             int c = Convert.ToInt32(p, 10);
-            c = baseAddress + 4 * (c - 1);
+            c = baseAddress + c-1;
             return Convert.ToString(c, 2).PadLeft(26, '0');
         }
 
-        private string calculateAddress(string p)
+        private string calculateAddress(string p,int a)
         {
             p = p.Trim();
-            int c = Convert.ToInt32(p, 10);
+            int c = Convert.ToInt32(p, 10)-a;
             c = baseAddress + 4 * (c - 1);
             return Convert.ToString(c, 2).PadLeft(16, '0');
         }
@@ -454,7 +471,7 @@ namespace MIPS_Assembler
                     break;
                 case 't':
                     if ((p[2] - '0') >= 8)
-                        reg = p[2] - '0' + 24;
+                        reg = p[2] - '0' + 24-8;
                     else
                         reg = p[2] - '0' + 8;
                     break;
@@ -656,7 +673,7 @@ namespace MIPS_Assembler
             foreach (string line in a)
             {
                 i++;
-                result.Text += i.ToString() + " ";
+                
                 result.Text += line+'\n';
             }
         }
@@ -671,6 +688,16 @@ namespace MIPS_Assembler
                     i++;
                     int j = baseAddress + 4 * (i - 1);
                     result.Text += Convert.ToString(j, 2).PadLeft(32, '0') + ":";
+                    result.Text += line + '\n';
+                }
+            }
+            if (m == "null")
+            {
+                
+                result.Text = "";
+                foreach (string line in a)
+                {
+                   
                     result.Text += line + '\n';
                 }
             }
@@ -818,10 +845,34 @@ namespace MIPS_Assembler
                             codes[i] = "jal " + address;
                             break;
                         case 4:
-                            codes[i] = "beq " + rs + "," + rt + "," + immdediate;
+                            codes[i] = "beq " + rs + "," + rt + "," +(Convert.ToInt32(immdediate,10)+i+2).ToString();
                             break;
                         case 5:
-                            codes[i] = "bne " + rs + "," + rt + "," + immdediate;
+                            codes[i] = "bne " + rs + "," + rt + "," + (Convert.ToInt32(immdediate, 10) + i + 2).ToString();
+                            break;
+                        case 8:
+                            codes[i] = "addi " + rt + "," + rs +","+ getC(codes[i]);
+                            break;
+                        case 9:
+                            codes[i] = "addiu " + rt + "," + rs + "," + getC(codes[i]);
+                            break;
+                        case 10:
+                            codes[i] = "slti " + rt + "," + rs + "," + getC(codes[i]);
+                            break;
+                        case 11:
+                            codes[i] = "sltiu " + rt + "," + rs + "," + getC(codes[i]);
+                            break;
+                        case 12:
+                            codes[i] = "andi " + rt + "," + rs + "," + getC(codes[i]);
+                            break;
+                        case 13:
+                            codes[i] = "ori " + rt + "," + rs + "," + getC(codes[i]);
+                            break;
+                        case 14:
+                            codes[i] = "xori " + rt + "," + rs + "," + getC(codes[i]);
+                            break;
+                        case 15:
+                            codes[i] = "lui " + rt +  "," + getC(codes[i]);
                             break;
                         case 32:
                             codes[i] = "lb " + rt + "," + getC(codes[i]) + "(" + rs + ")";
@@ -866,10 +917,16 @@ namespace MIPS_Assembler
                     }
                     codes[i] += ";";
                 }
-                catch(FormatException)
+                catch(FormatException f)
                 {
-                    info.Text="格式错误，第"+(i+1).ToString()+"行";
+                    string t="格式错误，第"+(i+1).ToString()+"行:"+f.Message;
+                    System.Windows.MessageBox.Show(t);
                 }
+                catch(IndexOutOfRangeException f2)
+                {
+                    System.Windows.MessageBox.Show(f2.Message);
+                }
+                
             }
             
         
@@ -903,7 +960,7 @@ namespace MIPS_Assembler
             string t="";
             for (int i = 6; i < 32; i++)
                 t += p[i].ToString();
-            a = Convert.ToInt32(t, 2)/4+1;
+            a = Convert.ToInt32(t, 2)+1;
             return a.ToString();
         }
 
@@ -1006,6 +1063,77 @@ namespace MIPS_Assembler
             code.Text = result.Text;
             result.Text = temp;
             
+        }
+
+        private void readCOEClick(object sender, RoutedEventArgs e)
+        {
+            string[] codes = code.Text.Split(';');
+           
+            string[] t=codes[0].Split('=');
+
+            if(t.Length==1)
+            {
+                System.Windows.MessageBox.Show("readCOE Failed!");
+                return;
+            }
+            t[1] = t[1].Trim(); 
+            int radix = Convert.ToInt32(t[1], 10);
+            string[] t2 = codes[1].Split('=');
+            string[] t3 = t2[1].Split(',');
+            
+            for(int i=0;i<t3.Length;i++)
+            {
+                t3[i] = t3[i].Trim();
+                t3[i] = t3[i].Trim(new char[] {'\n','\r'});
+                int temp = Convert.ToInt32(t3[i], radix);
+                t3[i] = Convert.ToString(temp, 2).PadLeft(32, '0');
+            }
+            printResult(t3,"null");
+        }
+
+        private void genCOEClick(object sender, RoutedEventArgs e)
+        {
+            string[] codes = code.Text.Split('\n');
+            codes = removeEmptyline(codes);
+            string[] result = new string[2];
+            result[0] = "memory_initialization_radix=16;";
+            result[1] = "memory_initialization_vector=";
+
+            for (int j = 0; j < codes.Length;j++ )
+            {
+                try
+                {
+                   
+                    string s = codes[j].Trim();
+                    if (s.Contains(':'))
+                        s = s.Split(':')[1].Trim();
+                    int i = Convert.ToInt32(s, 2);
+                    s = Convert.ToString(i, 16).PadLeft(8, '0');
+                    result[1] += s;
+                    if (j == codes.Length - 1)
+                        result[1] += ";";
+                    else
+                        result[1] += ",";
+                }
+                catch (FormatException f)
+                {
+                    System.Windows.MessageBox.Show("在genCOEClick方法中 " + f.Message);
+                    
+                }
+                catch (ArgumentOutOfRangeException f)
+                {
+                    System.Windows.MessageBox.Show("在genCOEClick方法中 "+f.Message);
+
+                }
+                
+            }
+            printResult(result,"null");
+        }
+
+        private void stepInto_Click(object sender, RoutedEventArgs e)
+        {
+            Window1 win = new Window1();
+            win.Show();
         }
     }
 }

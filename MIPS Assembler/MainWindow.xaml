@@ -10,14 +10,10 @@
         </Grid.ColumnDefinitions>
         <TextBox x:Name="code" HorizontalAlignment="Left" Margin="10,69,0,0" TextWrapping="Wrap" Text="代码" VerticalAlignment="Top" Width="761" Height="306" TextChanged="code_TextChanged" FontFamily="Courier New" Grid.ColumnSpan="2" AcceptsReturn="True"/>
         <Label Content="编辑区域" HorizontalAlignment="Left" Margin="10,44,0,0" VerticalAlignment="Top"/>
-        <Button x:Name="assemble" Content="汇编" HorizontalAlignment="Left" Margin="244,512,0,0" VerticalAlignment="Top" Width="120" Click="assembleClick" Height="20" Grid.Column="1"/>
+        <Button x:Name="assemble" Content="汇编" HorizontalAlignment="Left" Margin="244,512,0,39" Width="120" Click="assembleClick" Grid.Column="1"/>
         <Button x:Name="disassemble" Content="反汇编" HorizontalAlignment="Left" Margin="244,541,0,0" VerticalAlignment="Top" Width="120" Grid.Column="1" Height="20" Click="disassembleClick"/>
         <Button x:Name="saveFile" Content="保存代码" Margin="22,20,601,0" VerticalAlignment="Top" Height="19" Click="saveFileClick" Grid.Column="1"/>
         <Button x:Name="open" Content="打开文件" HorizontalAlignment="Left" Margin="10,20,0,0" VerticalAlignment="Top" Width="75" Click="openClick"/>
-        <Button x:Name="stepInto" Content="单步调试" HorizontalAlignment="Left" Margin="402,512,0,0" VerticalAlignment="Top" Width="120" Grid.Column="1" Height="20"/>
-        <Button x:Name="stepOver" Content="单步（不进入函数）" HorizontalAlignment="Left" Margin="402,542,0,0" VerticalAlignment="Top" Width="120" Grid.Column="1" Height="20"/>
-        <Button x:Name="goTo" Content="运行到此行" HorizontalAlignment="Left" VerticalAlignment="Top" Width="120" Margin="542,542,0,0" Grid.Column="1" Height="20"/>
-        <TextBox x:Name="lineNumber" HorizontalAlignment="Left" Height="20" Margin="542,512,0,0" TextWrapping="Wrap" Text="1" VerticalAlignment="Top" Width="120" Grid.Column="1"/>
         <TextBlock x:Name="info" HorizontalAlignment="Left" Margin="572,19,0,0" TextWrapping="Wrap" VerticalAlignment="Top" Height="27" Width="117" Grid.Column="1"><Run Language="zh-cn" Text="3120104648 李书楠"/></TextBlock>
         <Border BorderBrush="Black" BorderThickness="1" HorizontalAlignment="Left" Height="100" Margin="10,396,0,0" VerticalAlignment="Top" Width="761" Grid.ColumnSpan="2">
             <ScrollViewer HorizontalAlignment="Left" Height="100" Margin="0,0,-1,-2" VerticalAlignment="Top" Width="760">
@@ -25,7 +21,9 @@
             </ScrollViewer>
         </Border>
         <Button x:Name="saveResult" Content="保存结果" HorizontalAlignment="Left" Margin="130,20,0,0" VerticalAlignment="Top" Width="90" Height="20" Click="saveResultClick" Grid.Column="1"/>
-        <Button x:Name="styleCode" Content="代码格式修正" HorizontalAlignment="Left" Margin="85,513,0,0" VerticalAlignment="Top" Width="120" Grid.Column="1" Click="styleCodeClick"/>
+        <Button x:Name="styleCode" Content="代码格式修正" HorizontalAlignment="Left" Margin="85,512,0,0" VerticalAlignment="Top" Width="120" Grid.Column="1" Click="styleCodeClick" Height="20"/>
         <Button x:Name="exchange" Content="交换代码与结果" Grid.Column="1" HorizontalAlignment="Left" Margin="85,542,0,0" VerticalAlignment="Top" Width="120" Height="20" Click="exchangeClick"/>
+        <Button x:Name="readCOE" Grid.ColumnSpan="2" Content="解读COE" HorizontalAlignment="Left" Height="20" Margin="10,512,0,0" VerticalAlignment="Top" Width="120" Click="readCOEClick"/>
+        <Button x:Name="genCOE" Grid.ColumnSpan="2" Content="生成COE" HorizontalAlignment="Left" Height="20" Margin="10,541,0,0" VerticalAlignment="Top" Width="120" Click="genCOEClick"/>
     </Grid>
 </Window>
