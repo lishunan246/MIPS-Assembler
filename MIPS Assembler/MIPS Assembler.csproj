@@ -26,9 +26,11 @@
     <MapFileExtensions>true</MapFileExtensions>
     <SupportUrl>http://www.lishunan.com</SupportUrl>
     <ErrorReportUrl>https://github.com/lishunan246/MIPS-Assembler</ErrorReportUrl>
+    <ProductName>MIPS Assembler</ProductName>
+    <PublisherName>李书楠</PublisherName>
     <AutorunEnabled>true</AutorunEnabled>
-    <ApplicationRevision>4</ApplicationRevision>
-    <ApplicationVersion>1.0.0.%2a</ApplicationVersion>
+    <ApplicationRevision>5</ApplicationRevision>
+    <ApplicationVersion>1.1.0.%2a</ApplicationVersion>
     <UseApplicationTrust>false</UseApplicationTrust>
     <PublishWizardCompleted>true</PublishWizardCompleted>
     <BootstrapperEnabled>true</BootstrapperEnabled>
@@ -66,7 +68,7 @@
   </PropertyGroup>
   <PropertyGroup />
   <PropertyGroup>
-    <ApplicationIcon>mips.ico</ApplicationIcon>
+    <ApplicationIcon>icon.ico</ApplicationIcon>
   </PropertyGroup>
   <PropertyGroup>
     <StartupObject>MIPS_Assembler.App</StartupObject>
@@ -165,6 +167,9 @@
   </ItemGroup>
   <ItemGroup>
     <Resource Include="mips.ico" />
+  </ItemGroup>
+  <ItemGroup>
+    <Resource Include="icon.ico" />
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 
