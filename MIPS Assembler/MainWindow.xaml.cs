@@ -13,42 +13,42 @@ namespace MIPS_Assembler
     /// MainWindow.xaml 的交互逻辑
     /// </summary>
 
-    enum insFormat { R, J, I }
-    public partial class MainWindow : Window
+    enum InsFormat { R, J, I }
+    public partial class MainWindow
     {
-        private OpenFileDialog openFileDialog = null;
-        private SaveFileDialog saveFileDialog = null;
-        private SaveFileDialog saveFileDialog2 = null;
+        private readonly OpenFileDialog _openFileDialog;
+        private readonly SaveFileDialog _saveFileDialog;
+        private readonly SaveFileDialog _saveFileDialog2;
 
-        private int baseAddress = 0;
+        private int _baseAddress;
 
-        private string[] resultToPrint;
+        private string[] _resultToPrint;
         public MainWindow()
         {
             InitializeComponent();
-            openFileDialog = new OpenFileDialog();
-            openFileDialog.FileOk += openFileDialogFileOk;
+            _openFileDialog = new OpenFileDialog();
+            _openFileDialog.FileOk += OpenFileDialogFileOk;
 
-            saveFileDialog = new SaveFileDialog();
+            _saveFileDialog = new SaveFileDialog();
 
-            saveFileDialog.Filter = "COE files (*.coe)|*.coe|txt files (*.txt)|*.txt|All files (*.*)|*.*";
-            saveFileDialog.FilterIndex = 3;
-            saveFileDialog.RestoreDirectory = true;
+            _saveFileDialog.Filter = Properties.Resources.saveFileDialogfilter;
+            _saveFileDialog.FilterIndex = 3;
+            _saveFileDialog.RestoreDirectory = true;
 
-            saveFileDialog.FileOk+=saveFileDialog_FileOk;
+            _saveFileDialog.FileOk+=saveFileDialog_FileOk;
 
-            saveFileDialog2 = new SaveFileDialog();
+            _saveFileDialog2 = new SaveFileDialog();
 
-            saveFileDialog2.Filter = "COE files (*.coe)|*.coe|txt files (*.txt)|*.txt|汇编程序(*.asm)|*.asm|All files (*.*)|*.*";
-            saveFileDialog2.FilterIndex = 3;
-            saveFileDialog2.RestoreDirectory = true;
+            _saveFileDialog2.Filter = Properties.Resources.saveFileDialog2fliter;
+            _saveFileDialog2.FilterIndex = 3;
+            _saveFileDialog2.RestoreDirectory = true;
 
-            saveFileDialog2.FileOk += saveFileDialog2_FileOk;
+            _saveFileDialog2.FileOk += saveFileDialog2_FileOk;
         }
 
         private void saveFileDialog2_FileOk(object sender, System.ComponentModel.CancelEventArgs e)
         {
-            string fullPathname = saveFileDialog2.FileName;
+            string fullPathname = _saveFileDialog2.FileName;
             FileInfo src = new FileInfo(fullPathname);
             FileStream fs = src.Create();
             fs.Close();
@@ -56,55 +56,55 @@ namespace MIPS_Assembler
 
                   
 
-            sw.Write(result.Text);
+            sw.Write(Result.Text);
             sw.Close();
         }
 
         private void saveFileDialog_FileOk(object sender, System.ComponentModel.CancelEventArgs e)
         {
-            string fullPathname = saveFileDialog.FileName;
+            string fullPathname = _saveFileDialog.FileName;
             FileInfo src = new FileInfo(fullPathname);
             FileStream fs = src.Create();
             fs.Close();
             StreamWriter sw = src.CreateText();
             
-            sw.Write(code.Text);
+            sw.Write(Code.Text);
             sw.Close();
         }
 
-        private void openClick(object sender, RoutedEventArgs e)
+        private void OpenClick(object sender, RoutedEventArgs e)
         {
-            openFileDialog.ShowDialog();
+            _openFileDialog.ShowDialog();
         }
 
-        private void openFileDialogFileOk(object sender, System.ComponentModel.CancelEventArgs e)
+        private void OpenFileDialogFileOk(object sender, System.ComponentModel.CancelEventArgs e)
         {
-            string fullPathname = openFileDialog.FileName;
+            string fullPathname = _openFileDialog.FileName;
             FileInfo src = new FileInfo(fullPathname);
             TextReader reader = src.OpenText();
-            displayData(reader);
+            DisplayData(reader);
         }
-        private void displayData(TextReader reader)
+        private void DisplayData(TextReader reader)
         {
-            code.Text = "";
+            Code.Text = "";
             string line = reader.ReadLine();
             while (line != null)
             {
-                code.Text += line + "\n";
+                Code.Text += line + "\n";
                 line = reader.ReadLine();
             }
             reader.Dispose();
         }
 
-        private void saveFileClick(object sender, RoutedEventArgs e)
+        private void SaveFileClick(object sender, RoutedEventArgs e)
         {
-            saveFileDialog.ShowDialog();
+            _saveFileDialog.ShowDialog();
         }
 
  
-        private void saveResultClick(object sender, RoutedEventArgs e)
+        private void SaveResultClick(object sender, RoutedEventArgs e)
         {
-            saveFileDialog2.ShowDialog();
+            _saveFileDialog2.ShowDialog();
         }
 
         private void code_TextChanged(object sender, TextChangedEventArgs e)
@@ -112,70 +112,62 @@ namespace MIPS_Assembler
             
         }
 
-        private void assembleClick(object sender, RoutedEventArgs e)
+        private void AssembleClick(object sender, RoutedEventArgs e)
         {
-            string[] codes = code.Text.Split('\n');
-            resultToPrint = doAssemble(codes);
-            printResult(resultToPrint,"address");
+            string[] codes = Code.Text.Split('\n');
+            _resultToPrint = DoAssemble(codes);
+            PrintResult(_resultToPrint,"address");
         }
 
-        private string[] removesharp(string[] codes)
+        private string[] Removesharp(string[] codes)
         {
             int i = 0;
             string[] asm = codes;
-            string[] temp = null;
             foreach (string line in codes)
             {
                 if (line.Contains("#"))
                 {
-                    temp = line.Split('#');
+                    var temp = line.Split('#');
                     asm[i] = temp[0];
                 }
                 else
                 {
-                    if (line != null)
-                    {
-                        asm[i] = line;
-                    }
+                    asm[i] = line;
                 }
                 i++;
             }
             return asm;
         }
 
-        private string[] removeComment(string[] codes)
+        private static string[] RemoveComment(string[] codes)
         {
             int i = 0;
             string[] asm = codes;
-            string[] temp = null;
             foreach (string line in codes)
             {
                 if (line.Contains("//"))
                 {
-                    temp = line.Split('/');
+                    var temp = line.Split('/');
                     asm[i] = temp[0];
                 }
                 else
                 {
-                    if (line != null)
-                    {
-                        asm[i] = line;
-                    }
+                    asm[i] = line;
                 }
                 i++;
             }
             return asm;
         }
 
-        private string[] doAssemble(string[] codes)//汇编
+        private string[] DoAssemble(string[] codes)//汇编
         {
             string[] machineCode;
-            string[] asm = doStyle(codes);
-            machineCode = dealPseudo(asm);
-            machineCode = doStyle(machineCode);
-            machineCode = dealBranch(machineCode);
+            string[] asm = DoStyle(codes);
+            machineCode = DealPseudo(asm);
+            machineCode = DoStyle(machineCode);
+            machineCode = DealBranch(machineCode);
 
-            machineCode = dealInstruction(machineCode);
+            machineCode = DealInstruction(machineCode);
            /* try
             {
                 machineCode = dealInstruction(machineCode);
@@ -188,12 +180,11 @@ namespace MIPS_Assembler
             return machineCode;
         }
 
-        private string[] dealInstruction(string[] machineCodes)//处理真正的指令
+        private string[] DealInstruction(string[] machineCodes)//处理真正的指令
         {
-            insFormat insType;   
             for (int i = 0; i < machineCodes.Length; i++)
             {
-                string[] instruction = machineCodes[i].Split(new char[] { ' ' }, 2);
+                string[] instruction = machineCodes[i].Split(new[] { ' ' }, 2);
                 try
                 {
                     instruction[1] = instruction[1].Remove(instruction[1].Length - 1);//除去最后一个字符：分号 
@@ -216,226 +207,183 @@ namespace MIPS_Assembler
                 switch (instruction[0])
                 {
                     case "add":
-                        insType = insFormat.R;
-                        machineCodes[i] = "000000" + regN(operant[1]) + regN(operant[2]) + regN(operant[0]) + "00000"+"100000";
+                        machineCodes[i] = "000000" + RegN(operant[1]) + RegN(operant[2]) + RegN(operant[0]) + "00000"+"100000";
                         break;
                     case "addu":
-                        insType = insFormat.R;
-                        machineCodes[i] = "000000" + regN(operant[1]) + regN(operant[2]) + regN(operant[0]) + "00000100001";
+                        machineCodes[i] = "000000" + RegN(operant[1]) + RegN(operant[2]) + RegN(operant[0]) + "00000100001";
                         break;
                     case "sub":
-                        insType = insFormat.R;
-                        machineCodes[i] = "000000" + regN(operant[1]) + regN(operant[2]) + regN(operant[0]) + "00000100010";
+                        machineCodes[i] = "000000" + RegN(operant[1]) + RegN(operant[2]) + RegN(operant[0]) + "00000100010";
                         break;
                     case "subu":
-                        insType = insFormat.R;
-                        machineCodes[i] = "000000" + regN(operant[1]) + regN(operant[2]) + regN(operant[0]) + "00000100011";
+                        machineCodes[i] = "000000" + RegN(operant[1]) + RegN(operant[2]) + RegN(operant[0]) + "00000100011";
                         break;
                     case "addi":
-                        insType = insFormat.I;
-                        machineCodes[i] = "001000" + regN(operant[1]) + regN(operant[0])+immToB16(operant[2]);
+                        machineCodes[i] = "001000" + RegN(operant[1]) + RegN(operant[0])+ImmToB16(operant[2]);
                         break;
                     case "addiu":
-                        insType = insFormat.I;
-                        machineCodes[i] = "001001" + regN(operant[1]) + regN(operant[0]) + immToB16(operant[2]);
+                        machineCodes[i] = "001001" + RegN(operant[1]) + RegN(operant[0]) + ImmToB16(operant[2]);
                         break;
                     case "mult":
-                        insType = insFormat.R;
-                        machineCodes[i] = "000000" + regN(operant[0]) + regN(operant[1]) + "00000" + "00000"+hexTob6("18");
+                        machineCodes[i] = "000000" + RegN(operant[0]) + RegN(operant[1]) + "00000" + "00000"+HexTob6("18");
                         break;
                     case "multu":
-                        insType = insFormat.R;
-                        machineCodes[i] = "000000" + regN(operant[0]) + regN(operant[1]) + "00000" + "00000" + hexTob6("19");
+                        machineCodes[i] = "000000" + RegN(operant[0]) + RegN(operant[1]) + "00000" + "00000" + HexTob6("19");
                         break;
                     case "div":
-                        insType = insFormat.R;
-                        machineCodes[i] = "000000" + regN(operant[0]) + regN(operant[1]) + "00000" + "00000" + hexTob6("1a");
+                        machineCodes[i] = "000000" + RegN(operant[0]) + RegN(operant[1]) + "00000" + "00000" + HexTob6("1a");
                         break;
                     case "divu":
-                        insType = insFormat.R;
-                        machineCodes[i] = "000000" + regN(operant[0]) + regN(operant[1]) + "00000" + "00000" + hexTob6("1b");
+                        machineCodes[i] = "000000" + RegN(operant[0]) + RegN(operant[1]) + "00000" + "00000" + HexTob6("1b");
                         break;
                     case "lw":
-                        insType = insFormat.I;
                         temp = operant[1].Split(new char[] {'(',')'});
-                        machineCodes[i] = hexTob6("23") + regN(temp[1]) + regN(operant[0]) + immToB16(temp[0]);
+                        machineCodes[i] = HexTob6("23") + RegN(temp[1]) + RegN(operant[0]) + ImmToB16(temp[0]);
                         break;
                     case "lh":
-                        insType = insFormat.I;
                         temp = operant[1].Split(new char[] { '(', ')' });
-                        machineCodes[i] = hexTob6("21") + regN(temp[1]) + regN(operant[0]) + immToB16(temp[0]);
+                        machineCodes[i] = HexTob6("21") + RegN(temp[1]) + RegN(operant[0]) + ImmToB16(temp[0]);
                         break;
                     case "lhu":
-                        insType = insFormat.I;
                         temp = operant[1].Split(new char[] { '(', ')' });
-                        machineCodes[i] = hexTob6("25") + regN(temp[1]) + regN(operant[0]) + immToB16(temp[0]);
+                        machineCodes[i] = HexTob6("25") + RegN(temp[1]) + RegN(operant[0]) + ImmToB16(temp[0]);
                         break;
                     case "lb":
-                        insType = insFormat.I;
                         temp = operant[1].Split(new char[] { '(', ')' });
-                        machineCodes[i] = hexTob6("20") + regN(temp[1]) + regN(operant[0]) + immToB16(temp[0]);
+                        machineCodes[i] = HexTob6("20") + RegN(temp[1]) + RegN(operant[0]) + ImmToB16(temp[0]);
                         break;
                     case "lbu":
-                        insType = insFormat.I;
                         temp = operant[1].Split(new char[] { '(', ')' });
-                        machineCodes[i] = hexTob6("24") + regN(temp[1]) + regN(operant[0]) + immToB16(temp[0]);
+                        machineCodes[i] = HexTob6("24") + RegN(temp[1]) + RegN(operant[0]) + ImmToB16(temp[0]);
                         break;
                     case "sw":
-                        insType = insFormat.I;
                         temp = operant[1].Split(new char[] { '(', ')' });
-                        machineCodes[i] = hexTob6("2b") + regN(temp[1]) + regN(operant[0]) + immToB16(temp[0]);
+                        machineCodes[i] = HexTob6("2b") + RegN(temp[1]) + RegN(operant[0]) + ImmToB16(temp[0]);
                         break;
                     case "sh":
-                        insType = insFormat.I;
                         temp = operant[1].Split(new char[] { '(', ')' });
-                        machineCodes[i] = hexTob6("29") + regN(temp[1]) + regN(operant[0]) + immToB16(temp[0]);
+                        machineCodes[i] = HexTob6("29") + RegN(temp[1]) + RegN(operant[0]) + ImmToB16(temp[0]);
                         break;
                     case "sb":
-                        insType = insFormat.I;
                         temp = operant[1].Split(new char[] { '(', ')' });
-                        machineCodes[i] = hexTob6("28") + regN(temp[1]) + regN(operant[0]) + immToB16(temp[0]);
+                        machineCodes[i] = HexTob6("28") + RegN(temp[1]) + RegN(operant[0]) + ImmToB16(temp[0]);
                         break;
 
                     case "lui":
-                        insType = insFormat.I;
-                        
-                        machineCodes[i] = hexTob6("f") + "00000"+ regN(operant[0]) + immToB16(operant[1]);
+
+                        machineCodes[i] = HexTob6("f") + "00000"+ RegN(operant[0]) + ImmToB16(operant[1]);
                         break;
 
                     case "mfhi":
-                        insType = insFormat.R;
 
-                        machineCodes[i] = hexTob6("0") + "00000" + "00000" + regN(operant[0]) +"00000" +hexTob6("10");
+                        machineCodes[i] = HexTob6("0") + "00000" + "00000" + RegN(operant[0]) +"00000" +HexTob6("10");
                         break;
                     case "mflo":
-                        insType = insFormat.R;
 
-                        machineCodes[i] = hexTob6("0") + "00000" + "00000" + regN(operant[0])  +"00000"+ hexTob6("12");
+                        machineCodes[i] = HexTob6("0") + "00000" + "00000" + RegN(operant[0])  +"00000"+ HexTob6("12");
                         break;
 
                     case "and":
-                        insType = insFormat.R;
-                         machineCodes[i] = "000000" + regN(operant[1]) + regN(operant[2]) + regN(operant[0]) +"00000" + hexTob6("24");
+                        machineCodes[i] = "000000" + RegN(operant[1]) + RegN(operant[2]) + RegN(operant[0]) +"00000" + HexTob6("24");
                         break;
                     case "andi":
-                        insType = insFormat.I;
-                        machineCodes[i] = hexTob6("c") + regN(operant[1]) + regN(operant[0]) + immToB16(operant[2]);
+                        machineCodes[i] = HexTob6("c") + RegN(operant[1]) + RegN(operant[0]) + ImmToB16(operant[2]);
                         break;
                     case "or":
-                        insType = insFormat.R;
-                        machineCodes[i] = "000000" + regN(operant[1]) + regN(operant[2]) + regN(operant[0])  +"00000"+ hexTob6("25");
+                        machineCodes[i] = "000000" + RegN(operant[1]) + RegN(operant[2]) + RegN(operant[0])  +"00000"+ HexTob6("25");
                         break;
                     case "ori":
-                        insType = insFormat.I;
-                        machineCodes[i] = hexTob6("d") + regN(operant[1]) + regN(operant[0]) + immToB16(operant[2]);
+                        machineCodes[i] = HexTob6("d") + RegN(operant[1]) + RegN(operant[0]) + ImmToB16(operant[2]);
                         break;
                     case "xori":
-                        insType = insFormat.I;
-                        machineCodes[i] = hexTob6("e") + regN(operant[1]) + regN(operant[0]) + immToB16(operant[2]);
+                        machineCodes[i] = HexTob6("e") + RegN(operant[1]) + RegN(operant[0]) + ImmToB16(operant[2]);
                         break;
                     case "xor":
-                        insType = insFormat.R;
-                        machineCodes[i] = "000000" + regN(operant[1]) + regN(operant[2]) + regN(operant[0]) +"00000" + hexTob6("26");
+                        machineCodes[i] = "000000" + RegN(operant[1]) + RegN(operant[2]) + RegN(operant[0]) +"00000" + HexTob6("26");
                         break;
                     case "nor":
-                        insType = insFormat.R;
-                        machineCodes[i] = "000000" + regN(operant[1]) + regN(operant[2]) + regN(operant[0]) +"00000" + hexTob6("27");
+                        machineCodes[i] = "000000" + RegN(operant[1]) + RegN(operant[2]) + RegN(operant[0]) +"00000" + HexTob6("27");
                         break;
                     case "slt":
-                        insType = insFormat.R;
-                        machineCodes[i] = "000000" + regN(operant[1]) + regN(operant[2]) + regN(operant[0]) +"00000" + hexTob6("2a");
+                        machineCodes[i] = "000000" + RegN(operant[1]) + RegN(operant[2]) + RegN(operant[0]) +"00000" + HexTob6("2a");
                         break;
                     case "slti":
-                        insType = insFormat.I;
-                        machineCodes[i] = hexTob6("a") + regN(operant[1]) + regN(operant[0]) + immToB16(operant[2]);
+                        machineCodes[i] = HexTob6("a") + RegN(operant[1]) + RegN(operant[0]) + ImmToB16(operant[2]);
                         break;
                     case "sll":
-                        insType = insFormat.R;
-                        machineCodes[i] = "000000" + "00000" + regN(operant[1]) + regN(operant[0]) + hexTob5(operant[2]) + hexTob6("0");
+                        machineCodes[i] = "000000" + "00000" + RegN(operant[1]) + RegN(operant[0]) + HexTob5(operant[2]) + HexTob6("0");
                         break;
                     case "srl":
-                        insType = insFormat.R;
-                        machineCodes[i] = "000000" + "00000" + regN(operant[1]) + regN(operant[0]) + hexTob5(operant[2]) + hexTob6("2");
+                        machineCodes[i] = "000000" + "00000" + RegN(operant[1]) + RegN(operant[0]) + HexTob5(operant[2]) + HexTob6("2");
                         break;
                     case "sra":
-                        insType = insFormat.R;
-                        machineCodes[i] = "000000" + "00000" + regN(operant[1]) + regN(operant[0]) + hexTob5(operant[2]) + hexTob6("3");
+                        machineCodes[i] = "000000" + "00000" + RegN(operant[1]) + RegN(operant[0]) + HexTob5(operant[2]) + HexTob6("3");
                         break;
                     case "sllv":
-                        insType = insFormat.R;
-                        machineCodes[i] = "000000" + regN(operant[1]) + regN(operant[2]) + regN(operant[0]) + "00000" + hexTob6("4");
+                        machineCodes[i] = "000000" + RegN(operant[1]) + RegN(operant[2]) + RegN(operant[0]) + "00000" + HexTob6("4");
                         break;
                     case "srlv":
-                        insType = insFormat.R;
-                        machineCodes[i] = "000000" + regN(operant[1]) + regN(operant[2]) + regN(operant[0]) + "00000" + hexTob6("6");
+                        machineCodes[i] = "000000" + RegN(operant[1]) + RegN(operant[2]) + RegN(operant[0]) + "00000" + HexTob6("6");
                         break;
                     case "srav":
-                        insType = insFormat.R;
-                        machineCodes[i] = "000000" + regN(operant[1]) + regN(operant[2]) + regN(operant[0]) + "00000" + hexTob6("7");
+                        machineCodes[i] = "000000" + RegN(operant[1]) + RegN(operant[2]) + RegN(operant[0]) + "00000" + HexTob6("7");
                         break;
                     case "beq":
-                        insType = insFormat.I;
-                        machineCodes[i] = hexTob6("4") + regN(operant[0]) + regN(operant[1]) + calculateAddress(operant[2],i+2);
+                        machineCodes[i] = HexTob6("4") + RegN(operant[0]) + RegN(operant[1]) + CalculateAddress(operant[2],i+2);
                         break;
                     case "bne":
-                        insType = insFormat.I;
-                        machineCodes[i] = hexTob6("5") + regN(operant[0]) + regN(operant[1]) + calculateAddress(operant[2], i + 2);
+                        machineCodes[i] = HexTob6("5") + RegN(operant[0]) + RegN(operant[1]) + CalculateAddress(operant[2], i + 2);
                         break;
                     case "j":
-                        insType = insFormat.J;
-                        machineCodes[i] = hexTob6("2") + calculateAddress26(operant[0]);
+                        machineCodes[i] = HexTob6("2") + CalculateAddress26(operant[0]);
                         break;
                     case "jal":
-                        insType = insFormat.J;
-                        machineCodes[i] = hexTob6("3") + calculateAddress26(operant[0]);
+                        machineCodes[i] = HexTob6("3") + CalculateAddress26(operant[0]);
                         break;
                     case "jr":
-                        insType = insFormat.R;
-                        machineCodes[i] = hexTob6("0") + regN(operant[0]) + "00000" + "00000" + "00000" + hexTob6("8");
-                        break;
-                    default:
+                        machineCodes[i] = HexTob6("0") + RegN(operant[0]) + "00000" + "00000" + "00000" + HexTob6("8");
                         break;
                 }
             }
             return machineCodes;
         }
 
-        private string calculateAddress26(string p)
+        private string CalculateAddress26(string p)
         {
             p = p.Trim();
             int c = Convert.ToInt32(p, 10);
-            c = baseAddress + c-1;
+            c = _baseAddress + c-1;
             return Convert.ToString(c, 2).PadLeft(26, '0');
         }
 
-        private string calculateAddress(string p,int a)
+        private string CalculateAddress(string p,int a)
         {
             p = p.Trim();
             int c = Convert.ToInt32(p, 10)-a;
-            c = baseAddress + 4 * (c - 1);
+            c = _baseAddress + 4 * (c - 1);
             return Convert.ToString(c, 2).PadLeft(16, '0');
         }
 
-        private string hexTob5(string p)
+        private string HexTob5(string p)
         {
             int i = Convert.ToInt32(p, 16);
             return Convert.ToString(i, 2).PadLeft(5, '0');
         }
 
-        private string hexTob6(string p)
+        private string HexTob6(string p)
         {
             int i = Convert.ToInt32(p, 16);
             return Convert.ToString(i, 2).PadLeft(6, '0');
         }
 
-        private string immToB16(string p)
+        private string ImmToB16(string p)
         {
             int i;
             i = Convert.ToInt32(p, 16);
             return Convert.ToString(i, 2).PadLeft(16, '0');
         }
 
-        private string regN(string p)
+        private string RegN(string p)
         {
             int reg;
             p=p.Trim().ToLower();
@@ -492,11 +440,10 @@ namespace MIPS_Assembler
             
         }
 
-        private string[] dealPseudo(string[] asm)//处理所遇到的伪指令
+        private string[] DealPseudo(string[] asm)//处理所遇到的伪指令
         {
             bool hasLabel = false;
             string label="";
-            string[] im = new string[2];
             for (int i = 0; i < asm.Length; i++)
             {
                 try
@@ -504,19 +451,20 @@ namespace MIPS_Assembler
                     if (asm[i].Contains(':'))
                     {
                         hasLabel = true;
-                        string[] temp = asm[i].Split(new char[] { ':' }, 2);
+                        var temp = asm[i].Split(new[] { ':' }, 2);
                         label = temp[0];
                         asm[i] = temp[1];
                     }
 
-                    string[] instruction = asm[i].Split(new char[] { ' ' }, 2);
+                    var instruction = asm[i].Split(new[] { ' ' }, 2);
                     instruction[1] = instruction[1].Remove(instruction[1].Length - 1);//除去最后一个字符：分号
-                    string[] operant = instruction[1].Split(',');
+                    var operant = instruction[1].Split(',');
+                    string[] im;
                     switch (instruction[0])
                     {
                         case "baseaddr":
                             asm[i] = "";
-                            baseAddress = Convert.ToInt32(operant[0], 16);
+                            _baseAddress = Convert.ToInt32(operant[0], 16);
                             break;
                         case "move":
                             asm[i] = "add " + operant[0] + "," + operant[1] + "," + "$zero;";
@@ -528,11 +476,11 @@ namespace MIPS_Assembler
                             asm[i] = "nor " + operant[0] + "," + operant[1] + "," + "$zero;";
                             break;
                         case "la":
-                            im = immSplit(operant[1]);
+                            im = ImmSplit(operant[1]);
                             asm[i] = "lui " + operant[0] + "," + im[0] + ";\nori " + operant[0] + "," + operant[0] + "," + im[1] + ";";
                             break;
                         case "li":
-                            im = immSplit(operant[1]);
+                            im = ImmSplit(operant[1]);
                             asm[i] = "lui " + operant[0] + "," + im[0] + ";\nori " + operant[0] + "," + operant[0] + "," + im[1] + ";";
                             break;
                         case "b":
@@ -572,29 +520,25 @@ namespace MIPS_Assembler
                         case "rem":
                             asm[i] = "div " + operant[1] + "," + operant[2] + ";\nmfli " + operant[0] + ";";
                             break;
-                        default:
-                            break;
                     }
-                    if (hasLabel)
-                    {
-                        asm[i] = label + ":" + asm[i];
-                        hasLabel = false;
-                    }
+                    if (!hasLabel) continue;
+                    asm[i] = label + ":" + asm[i];
+                    hasLabel = false;
                 }
                 catch (IndexOutOfRangeException f)
                 {
-                    info.Text ="第"+(i+1).ToString()+"行："+ f.Message;
+                    Info.Text ="第"+(i+1).ToString()+"行："+ f.Message;
                 }
             }
             return asm;
         }
 
-        private string[] immSplit(string p)
+        private static string[] ImmSplit(string p)
         {
             p = p.PadLeft( 8,'0');
-            string[] r = new string[2];
+            var r = new string[2];
             r[0] = "";
-            for(int i=0;i<4;i++)
+            for(var i=0;i<4;i++)
             {
                 r[0] += p[i].ToString();
             }
@@ -605,7 +549,7 @@ namespace MIPS_Assembler
             return r;
         }
 
-        private string[] dealBranch(string[] asm)
+        private string[] DealBranch(string[] asm)
         {
            for(int i=0;i<asm.Length;i++)
            {
@@ -628,26 +572,20 @@ namespace MIPS_Assembler
                    }
                    catch (SystemException)
                    {
-                       info.Text = "格式错误：第" + (i + 1).ToString() + "行\n";
+                       Info.Text = "格式错误：第" + (i + 1).ToString() + "行\n";
                    }
                }
            }
             return asm;
         }
 
-        private string[] reFormat(string[] asm)
+        private static string[] ReFormat(IEnumerable<string> asm)
         {
             char[] t1 = { ';' };
-            string[] t2;
-            string temp="";
+            string temp= asm.Select(line => line.Trim()).Aggregate("", (current, t) => current + t);
 
-            foreach(string line in asm)
-            {
-                string t=line.Trim();
-                temp += t;
-            }
-            t2= temp.Split(t1,StringSplitOptions.RemoveEmptyEntries);
-            for(int i=0;i<t2.Length;i++)
+            var t2 = temp.Split(t1,StringSplitOptions.RemoveEmptyEntries);
+            for(var i=0;i<t2.Length;i++)
             {
                 t2[i] = t2[i].Trim();
                 t2[i] = t2[i].ToLower();
@@ -656,7 +594,7 @@ namespace MIPS_Assembler
             return t2;
         }
 
-        private string[] removeEmptyline(string[] asm)
+        private static string[] RemoveEmptyline(IEnumerable<string> asm)
         {
             IEnumerable<string> re =
                 from line in asm
@@ -666,73 +604,67 @@ namespace MIPS_Assembler
             return re.ToArray();
         }
 
-        private void printResult(string[] a)
+        private void PrintResult(string[] a)
         {
-            int i = 0;
-            result.Text = "";
+            Result.Text = "";
             foreach (string line in a)
             {
-                i++;
-                
-                result.Text += line+'\n';
+               Result.Text += line+'\n';
             }
         }
-        private void printResult(string[] a,string m)
+        private void PrintResult(string[] a,string m)
         {
             if (m == "address")
             {
                 int i = 0;
-                result.Text = "";
+                Result.Text = "";
                 foreach (string line in a)
                 {
                     i++;
-                    int j = baseAddress + 4 * (i - 1);
-                    result.Text += Convert.ToString(j, 2).PadLeft(32, '0') + ":";
-                    result.Text += line + '\n';
+                    int j = _baseAddress + 4 * (i - 1);
+                    Result.Text += Convert.ToString(j, 2).PadLeft(32, '0') + ":";
+                    Result.Text += line + '\n';
                 }
             }
             if (m == "null")
             {
                 
-                result.Text = "";
+                Result.Text = "";
                 foreach (string line in a)
                 {
                    
-                    result.Text += line + '\n';
+                    Result.Text += line + '\n';
                 }
             }
         }
 
-        private void styleCodeClick(object sender, RoutedEventArgs e)
+        private void StyleCodeClick(object sender, RoutedEventArgs e)
         {
-            string[] codes = code.Text.Split('\n');
-            resultToPrint = doStyle(codes);
-            printResult(resultToPrint);
+            string[] codes = Code.Text.Split('\n');
+            _resultToPrint = DoStyle(codes);
+            PrintResult(_resultToPrint);
         }
 
-        private string[] doStyle(string[] codes)
+        private string[] DoStyle(string[] codes)
         {
             
-            string[] asm = removesharp(codes);
-            asm = removeComment(asm);
-            asm = removeEmptyline(asm);
-            asm = reFormat(asm);
+            string[] asm = Removesharp(codes);
+            asm = RemoveComment(asm);
+            asm = RemoveEmptyline(asm);
+            asm = ReFormat(asm);
             return asm;
         }
 
-        private void disassembleClick(object sender, RoutedEventArgs e)
+        private void DisassembleClick(object sender, RoutedEventArgs e)
         {
-            string[] codes = code.Text.Split('\n');
-            codes = removeEmptyline(codes);
-            string[] result = doDisassem(codes);
-            printResult(result);
+            string[] codes = Code.Text.Split('\n');
+            codes = RemoveEmptyline(codes);
+            string[] rLocal = DoDisassem(codes);
+            PrintResult(rLocal);
         }
 
-        private string[] doDisassem(string[] codes)
+        private string[] DoDisassem(string[] codes)
         {
-            string opcode, rs, rt, rd, shamt, funct,immdediate,address;
-
-
             for (int i = 0; i < codes.Length; i++)
             {
                 try
@@ -741,19 +673,19 @@ namespace MIPS_Assembler
                     {
                         codes[i] = codes[i].Split(':')[1];
                     }
-                    opcode = getOpcode(codes[i]);
-                    address = getAddress(codes[i]);
-                    rs = RegNam(getRs(codes[i]));
-                    rt = RegNam(getRt(codes[i]));
-                    immdediate = getImmediate(codes[i]);
+                    var opcode = GetOpcode(codes[i]);
+                    var address = GetAddress(codes[i]);
+                    var rs = RegNam(GetRs(codes[i]));
+                    var rt = RegNam(GetRt(codes[i]));
+                    var immdediate = GetImmediate(codes[i]);
                     int j=Convert.ToInt32(opcode, 2);
                     switch (j)
                     {
                         case 0:
 
-                            rd = RegNam(getRd(codes[i]));
-                            shamt = getShamt(codes[i]);
-                            funct = getFunct(codes[i]);
+                            var rd = RegNam(GetRd(codes[i]));
+                            var shamt = GetShamt(codes[i]);
+                            var funct = GetFunct(codes[i]);
                             switch (Convert.ToInt32(funct, 2))
                             {
                                 case 0:
@@ -834,8 +766,6 @@ namespace MIPS_Assembler
                                 case 43:
                                     codes[i] = "sltu " + rd + "," + rs + "," + rt;
                                     break;
-                                default:
-                                    break;
                             }
                             break;
                         case 2:
@@ -851,68 +781,64 @@ namespace MIPS_Assembler
                             codes[i] = "bne " + rs + "," + rt + "," + (Convert.ToInt32(immdediate, 10) + i + 2).ToString();
                             break;
                         case 8:
-                            codes[i] = "addi " + rt + "," + rs +","+ getC(codes[i]);
+                            codes[i] = "addi " + rt + "," + rs +","+ GetC(codes[i]);
                             break;
                         case 9:
-                            codes[i] = "addiu " + rt + "," + rs + "," + getC(codes[i]);
+                            codes[i] = "addiu " + rt + "," + rs + "," + GetC(codes[i]);
                             break;
                         case 10:
-                            codes[i] = "slti " + rt + "," + rs + "," + getC(codes[i]);
+                            codes[i] = "slti " + rt + "," + rs + "," + GetC(codes[i]);
                             break;
                         case 11:
-                            codes[i] = "sltiu " + rt + "," + rs + "," + getC(codes[i]);
+                            codes[i] = "sltiu " + rt + "," + rs + "," + GetC(codes[i]);
                             break;
                         case 12:
-                            codes[i] = "andi " + rt + "," + rs + "," + getC(codes[i]);
+                            codes[i] = "andi " + rt + "," + rs + "," + GetC(codes[i]);
                             break;
                         case 13:
-                            codes[i] = "ori " + rt + "," + rs + "," + getC(codes[i]);
+                            codes[i] = "ori " + rt + "," + rs + "," + GetC(codes[i]);
                             break;
                         case 14:
-                            codes[i] = "xori " + rt + "," + rs + "," + getC(codes[i]);
+                            codes[i] = "xori " + rt + "," + rs + "," + GetC(codes[i]);
                             break;
                         case 15:
-                            codes[i] = "lui " + rt +  "," + getC(codes[i]);
+                            codes[i] = "lui " + rt +  "," + GetC(codes[i]);
                             break;
                         case 32:
-                            codes[i] = "lb " + rt + "," + getC(codes[i]) + "(" + rs + ")";
+                            codes[i] = "lb " + rt + "," + GetC(codes[i]) + "(" + rs + ")";
                             break;
                         case 33:
-                            codes[i] = "lh " + rt + "," + getC(codes[i]) + "(" + rs + ")";
+                            codes[i] = "lh " + rt + "," + GetC(codes[i]) + "(" + rs + ")";
                             break;
                         case 34:
-                            codes[i] = "lwl " + rt + "," + getC(codes[i]) + "(" + rs + ")";
+                            codes[i] = "lwl " + rt + "," + GetC(codes[i]) + "(" + rs + ")";
                             break;
                         case 35:
-                            codes[i] = "lw " + rt + "," + getC(codes[i]) + "(" + rs + ")";
+                            codes[i] = "lw " + rt + "," + GetC(codes[i]) + "(" + rs + ")";
                             break;
                         case 36:
-                            codes[i] = "lbu " + rt + "," + getC(codes[i]) + "(" + rs + ")";
+                            codes[i] = "lbu " + rt + "," + GetC(codes[i]) + "(" + rs + ")";
                             break;
                         case 37:
-                            codes[i] = "lhu " + rt + "," + getC(codes[i]) + "(" + rs + ")";
+                            codes[i] = "lhu " + rt + "," + GetC(codes[i]) + "(" + rs + ")";
                             break;
                         case 38:
-                            codes[i] = "lwr " + rt + "," + getC(codes[i]) + "(" + rs + ")";
+                            codes[i] = "lwr " + rt + "," + GetC(codes[i]) + "(" + rs + ")";
                             break;
                         case 40:
-                            codes[i] = "sb " + rt + "," + getC(codes[i]) + "(" + rs + ")";
+                            codes[i] = "sb " + rt + "," + GetC(codes[i]) + "(" + rs + ")";
                             break;
                         case 41:
-                            codes[i] = "sh " + rt + "," + getC(codes[i]) + "(" + rs + ")";
+                            codes[i] = "sh " + rt + "," + GetC(codes[i]) + "(" + rs + ")";
                             break;
                         case 42:
-                            codes[i] = "swl " + rt + "," + getC(codes[i]) + "(" + rs + ")";
+                            codes[i] = "swl " + rt + "," + GetC(codes[i]) + "(" + rs + ")";
                             break;
                         case 43:
-                            codes[i] = "sw " + rt + "," + getC(codes[i]) + "(" + rs + ")";
+                            codes[i] = "sw " + rt + "," + GetC(codes[i]) + "(" + rs + ")";
                             break;
                         case 46:
-                            codes[i] = "swr " + rt + "," + getC(codes[i]) + "(" + rs + ")";
-                            break;
-
-
-                        default:
+                            codes[i] = "swr " + rt + "," + GetC(codes[i]) + "(" + rs + ")";
                             break;
                     }
                     codes[i] += ";";
@@ -934,7 +860,7 @@ namespace MIPS_Assembler
            
         }
 
-        private string getC(string p)
+        private string GetC(string p)
         {
             int a;
             string t = "";
@@ -944,7 +870,7 @@ namespace MIPS_Assembler
             return Convert.ToString(a,16) ;
         }
 
-        private string getImmediate(string p)
+        private string GetImmediate(string p)
         {
             int a;
             string t = "";
@@ -954,7 +880,7 @@ namespace MIPS_Assembler
             return a.ToString();
         }
 
-        private string getAddress(string p)
+        private string GetAddress(string p)
         {
             int a;
             string t="";
@@ -1019,28 +945,28 @@ namespace MIPS_Assembler
             }
         }
 
-        private string getOpcode(string p)
+        private string GetOpcode(string p)
         {
             string t="";
             for (int i = 0; i < 6; i++)
                 t += p[i].ToString();
             return t;
         }
-        private string getRs(string p)
+        private string GetRs(string p)
         {
             string t = "";
             for (int i = 6; i < 11; i++)
                 t += p[i].ToString();
             return t;
         }
-        private string getRt(string p)
+        private string GetRt(string p)
         {
             string t = "";
             for (int i = 11; i < 16; i++)
                 t += p[i].ToString();
             return t;
         }
-        private string getRd(string p)
+        private string GetRd(string p)
         {
             string t = "";
             for (int i = 16; i < 21; i++)
@@ -1048,7 +974,7 @@ namespace MIPS_Assembler
             return t;
         }
 
-        private string getShamt(string p)
+        private string GetShamt(string p)
         {
             string t = "";
             for (int i = 21; i < 26; i++)
@@ -1056,7 +982,7 @@ namespace MIPS_Assembler
             int m = Convert.ToInt32(t, 2);
             return Convert.ToString(m, 16);
         }
-        private string getFunct(string p)
+        private string GetFunct(string p)
         {
             string t = "";
             for (int i = 26; i < 32; i++)
@@ -1064,17 +990,17 @@ namespace MIPS_Assembler
             return t;
         }
 
-        private void exchangeClick(object sender, RoutedEventArgs e)
+        private void ExchangeClick(object sender, RoutedEventArgs e)
         {
-            string temp = code.Text;
-            code.Text = result.Text;
-            result.Text = temp;
+            string temp = Code.Text;
+            Code.Text = Result.Text;
+            Result.Text = temp;
             
         }
 
-        private void readCOEClick(object sender, RoutedEventArgs e)
+        private void ReadCoeClick(object sender, RoutedEventArgs e)
         {
-            string[] codes = code.Text.Split(';');
+            string[] codes = Code.Text.Split(';');
            
             string[] t=codes[0].Split('=');
 
@@ -1095,16 +1021,16 @@ namespace MIPS_Assembler
                 int temp = Convert.ToInt32(t3[i], radix);
                 t3[i] = Convert.ToString(temp, 2).PadLeft(32, '0');
             }
-            printResult(t3,"null");
+            PrintResult(t3,"null");
         }
 
-        private void genCOEClick(object sender, RoutedEventArgs e)
+        private void GenCoeClick(object sender, RoutedEventArgs e)
         {
-            string[] codes = code.Text.Split('\n');
-            codes = removeEmptyline(codes);
-            string[] result = new string[2];
-            result[0] = "memory_initialization_radix=16;";
-            result[1] = "memory_initialization_vector=";
+            string[] codes = Code.Text.Split('\n');
+            codes = RemoveEmptyline(codes);
+            string[] r2 = new string[2];
+            r2[0] = "memory_initialization_radix=16;";
+            r2[1] = "memory_initialization_vector=";
 
             for (int j = 0; j < codes.Length;j++ )
             {
@@ -1116,11 +1042,11 @@ namespace MIPS_Assembler
                         s = s.Split(':')[1].Trim();
                     int i = Convert.ToInt32(s, 2);
                     s = Convert.ToString(i, 16).PadLeft(8, '0');
-                    result[1] += s;
+                    r2[1] += s;
                     if (j == codes.Length - 1)
-                        result[1] += ";";
+                        r2[1] += ";";
                     else
-                        result[1] += ",";
+                        r2[1] += ",";
                 }
                 catch (FormatException f)
                 {
@@ -1134,13 +1060,7 @@ namespace MIPS_Assembler
                 }
                 
             }
-            printResult(result,"null");
-        }
-
-        private void stepInto_Click(object sender, RoutedEventArgs e)
-        {
-            Window1 win = new Window1();
-            win.Show();
+            PrintResult(r2,"null");
         }
     }
 }

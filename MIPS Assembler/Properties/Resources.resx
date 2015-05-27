@@ -114,4 +114,10 @@
   <resheader name="writer">
     <value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=2.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
   </resheader>
+  <data name="saveFileDialog2fliter" xml:space="preserve">
+    <value>COE files (*.coe)|*.coe|txt files (*.txt)|*.txt|汇编程序(*.asm)|*.asm|All files (*.*)|*.*</value>
+  </data>
+  <data name="saveFileDialogfilter" xml:space="preserve">
+    <value>COE files (*.coe)|*.coe|txt files (*.txt)|*.txt|All files (*.*)|*.*</value>
+  </data>
 </root>
