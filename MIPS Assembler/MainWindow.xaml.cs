@@ -743,15 +743,15 @@ namespace MIPS_Assembler
                     }
                     opcode = getOpcode(codes[i]);
                     address = getAddress(codes[i]);
-                    rs = regNam(getRs(codes[i]));
-                    rt = regNam(getRt(codes[i]));
+                    rs = RegNam(getRs(codes[i]));
+                    rt = RegNam(getRt(codes[i]));
                     immdediate = getImmediate(codes[i]);
                     int j=Convert.ToInt32(opcode, 2);
                     switch (j)
                     {
                         case 0:
 
-                            rd = regNam(getRd(codes[i]));
+                            rd = RegNam(getRd(codes[i]));
                             shamt = getShamt(codes[i]);
                             funct = getFunct(codes[i]);
                             switch (Convert.ToInt32(funct, 2))
@@ -964,52 +964,59 @@ namespace MIPS_Assembler
             return a.ToString();
         }
 
-        private string regNam(string p)
+        private static string RegNam(string p,bool x=false)
         {
             int r = Convert.ToInt32(p, 2);
-            if (r >= 8 && r <= 15)
-                return "$t" + (r - 8).ToString();
-            else if (r >= 16 && r <= 23)
-                return "$s" + (r - 16).ToString();
-            else
-                switch (r)
-                {
-                    case 0:
-                        return "$zero";
-                    case 1:
-                        return "$at";
-                    case 2:
-                        return "$v0";
-                    case 3:
-                        return "$v1";
-                    case 4:
-                        return "$a0";
-                    case 5:
-                        return "$a1";
-                    case 6:
-                        return "$a2";
-                    case 7:
-                        return "$a3";
-                    case 24:
-                        return "$t8";
-                    case 25:
-                        return "$t9";
-                    case 26:
-                        return "$k0";
-                    case 27:
-                        return "$k1";
-                    case 28:
-                        return "$gp";
-                    case 29:
-                        return "$sp";
-                    case 30:
-                        return "$fp";
-                    case 31:
-                        return "$ra";
+            if (x)
+            {
+                if (r >= 8 && r <= 15)
+                    return "$t" + (r - 8).ToString();
+                else if (r >= 16 && r <= 23)
+                    return "$s" + (r - 16).ToString();
+                else
+                    switch (r)
+                    {
+                        case 0:
+                            return "$zero";
+                        case 1:
+                            return "$at";
+                        case 2:
+                            return "$v0";
+                        case 3:
+                            return "$v1";
+                        case 4:
+                            return "$a0";
+                        case 5:
+                            return "$a1";
+                        case 6:
+                            return "$a2";
+                        case 7:
+                            return "$a3";
+                        case 24:
+                            return "$t8";
+                        case 25:
+                            return "$t9";
+                        case 26:
+                            return "$k0";
+                        case 27:
+                            return "$k1";
+                        case 28:
+                            return "$gp";
+                        case 29:
+                            return "$sp";
+                        case 30:
+                            return "$fp";
+                        case 31:
+                            return "$ra";
 
-                    default:
-                        return "Unknown_Register";
-                }
+                        default:
+                            return "Unknown_Register";
+                    }
+            }
+            else
+            {
+                return "r" + r.ToString();
+            }
         }
 
         private string getOpcode(string p)
